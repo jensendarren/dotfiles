@@ -1,3 +1,3 @@
 curl -L https://foundry.paradigm.xyz | bash
-. /home/gitpod/.bashrc
+source /home/gitpod/.bashrc
 foundryup
