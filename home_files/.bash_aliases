@@ -30,5 +30,8 @@ alias wk='cd ~/workspace/'
 # claude --dangerously-skip-permissions alias
 alias claudeyolo='claude --dangerously-skip-permissions'
 
+# claude system prompts (NOTE: rampup.md is in the claude-code-kit repo)
+alias claude-rampup='claude --system-prompt-file ~/.claude/prompts/rampup.md'
+
 # utilities
 alias psapp='f() { for pid in $(pgrep "$1"); do echo "$pid $1 $(lsof -p $pid -a -d cwd -Fn 2>/dev/null | grep ^n | cut -c2-)"; done }; f'
