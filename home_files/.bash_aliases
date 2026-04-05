@@ -1,3 +1,5 @@
+# NOTE for zsh shell save this in ~/.zshrc
+
 export EDITOR=nano
 
 # Git alias
@@ -32,6 +34,10 @@ alias claudeyolo='claude --dangerously-skip-permissions'
 
 # claude system prompts (NOTE: rampup.md is in the claude-code-kit repo)
 alias claude-rampup='claude --system-prompt-file ~/.claude/prompts/rampup.md'
+
+# bindkey for zsh
+bindkey '\e[H' beginning-of-line
+bindkey '\e[F' end-of-line
 
 # utilities
 alias psapp='f() { for pid in $(pgrep "$1"); do echo "$pid $1 $(lsof -p $pid -a -d cwd -Fn 2>/dev/null | grep ^n | cut -c2-)"; done }; f'
