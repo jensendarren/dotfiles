@@ -1,19 +1,27 @@
-curl -L https://foundry.paradigm.xyz | bash
+#!/usr/bin/env bash
+# Copy dotfiles from home_files/ into $HOME.
+# Any existing file that differs is backed up first to ~/.dotfiles_backup/<timestamp>/.
+set -euo pipefail
 
-current_dir="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
-dotfiles_source="${current_dir}/home_files"
+src="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/home_files"
+backup_dir="${HOME}/.dotfiles_backup/$(date +%Y%m%d-%H%M%S)"
 
-while read -r file; do
+while IFS= read -r -d '' file; do
+    rel="${file#"$src"/}"
+    target="${HOME}/${rel}"
 
-    relative_file_path="${file#"${dotfiles_source}"/}"
-    target_file="${HOME}/${relative_file_path}"
-    target_dir="${target_file%/*}"
-
-    if test ! -d "${target_dir}"; then
-        mkdir -p "${target_dir}"
+    if [[ -e "$target" || -L "$target" ]]; then
+        if [[ ! -L "$target" ]] && cmp -s "$file" "$target"; then
+            echo "Unchanged  ~/$rel"
+            continue
+        fi
+        mkdir -p "$backup_dir/$(dirname "$rel")"
+        cp -P "$target" "$backup_dir/$rel"  # -P keeps an old symlink as a symlink
+        rm -f "$target"                      # so we never write through an old symlink
+        echo "Backed up  ~/$rel -> $backup_dir/$rel"
     fi
 
-    printf 'Installing dotfiles symlink %s\n' "${target_file}"
-    ln -sf "${file}" "${target_file}"
-
-done < <(find "${dotfiles_source}" -type f)
+    mkdir -p "$(dirname "$target")"
+    cp "$file" "$target"
+    echo "Installed  ~/$rel"
+done < <(find "$src" -type f -print0)

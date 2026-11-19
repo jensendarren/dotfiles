@@ -1,7 +1,7 @@
 # Dot Files
 
 - Install "ohmyzsh" [here](https://ohmyz.sh/)
-- Append the custom setings to the `~/.zshrc` file from [here](./home_files/.bash_aliases)
+- Copy [home_files/.zshrc](./home_files/.zshrc) to `~/.zshrc` (or run `./install.sh`, which backs up your existing dotfiles to `~/.dotfiles_backup/` first)
 - Reload the shell using `source ~/.zshrc`
 
 # Local MacBook Server Setup

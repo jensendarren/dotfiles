@@ -198,6 +198,39 @@ if [ -f '/Users/darren/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/da
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+export EDITOR=nano
+
+# Git alias
+alias gs='git status '
+alias ga='git add '
+alias gb='git branch '
+alias gc='git commit'
+alias gd='git diff'
+alias gg='git grep -n '
+
+# Docker
+alias ks='kubectl'
+alias dc='docker-compose'
+alias dp='docker ps'
+alias di='docker images'
+
+# Docker helper functions
+dcr() { docker-compose run --rm "$@"; }
+drun() { docker run -it --entrypoint bash "$1"; }
+
+# dexec is a helper function to start a bash terminal in a running docker container
+dexec() { docker exec -it "$1" bash; }
+
+# dclean is a helper function to remove unused docker images and prune docker system resources
+dclean() { docker stop $(docker ps -a -q); docker rm -f $(docker ps -a -q); docker rmi -f $(docker images | grep "<none>" | awk "{print \$3}"); docker system prune -f; docker system prune --volumes -f; }
+
+# workspace
+alias wk='cd ~/workspace/'
+
+# bindkey for zsh
+bindkey '\e[H' beginning-of-line
+bindkey '\e[F' end-of-line
+
 # claude system prompts (NOTE: rampup.md is in the claude-code-kit repo)
 alias claude-rampup='claude --system-prompt-file ~/.claude/prompts/rampup.md'
 
@@ -223,3 +256,36 @@ eval "$(direnv hook zsh)"
 
 # update omz automatically
 zstyle ':omz:update' mode auto
+
+# git clone: pick an SSH key based on the repo's GitHub org, and save it
+# as core.sshCommand in the new repo's .git/config.
+_git_clone_key() {
+  local url=$1
+  case $url in
+    *[:/]Liquid-Loans-Official/*|*[:/]fetchoracle/*) echo ~/.ssh/id_rsa_darren_ll ;;
+    *[:/]darren-qs/*|*[:/]quantstamp/*)               echo ~/.ssh/id_rsa_darren_qs ;;
+    *[:/]inventure/*)                                 echo ~/.ssh/id_ed25519_darren_mbd ;;
+    *)                                                echo ~/.ssh/id_rsa ;;
+  esac
+}
+
+git() {
+  if [[ $1 == clone ]]; then
+    local arg url
+    for arg in "${@:2}"; do
+      [[ $arg == git@* || $arg == ssh://* ]] && { url=$arg; break; }
+    done
+    if [[ -n $url ]]; then
+      local key=$(_git_clone_key "$url")
+      command git clone -c core.sshCommand="ssh -i $key -o IdentitiesOnly=yes" "${@:2}"
+      return
+    fi
+  fi
+  command git "$@"
+}
+
+# keep the Mac awake even with the lid closed (prompts for sudo password).
+# Run `sleepon` afterwards, otherwise the Mac will never sleep.
+alias sleepoff='sudo pmset -a disablesleep 1 && echo "Sleep disabled: safe to close the lid"'
+alias sleepon='sudo pmset -a disablesleep 0 && echo "Sleep re-enabled"'
+alias sleepstatus='pmset -g | grep -i sleepdisabled'
