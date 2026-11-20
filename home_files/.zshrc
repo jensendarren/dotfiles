@@ -231,6 +231,19 @@ alias wk='cd ~/workspace/'
 bindkey '\e[H' beginning-of-line
 bindkey '\e[F' end-of-line
 
+# ssh-agent: after a reboot, Herdr can restore panes with a dead SSH_AUTH_SOCK.
+# If the agent is unreachable, use macOS's built-in agent (or start one as a last resort).
+_ssh_agent_fix() {
+  ssh-add -l >/dev/null 2>&1
+  (( $? == 2 )) || return 0   # 0 = keys loaded, 1 = agent up but empty, 2 = can't connect
+  local sock
+  for sock in /private/var/run/com.apple.launchd.*/Listeners(N=) /private/tmp/com.apple.launchd.*/Listeners(N=); do
+    [[ -O $sock ]] && { export SSH_AUTH_SOCK=$sock; return 0; }
+  done
+  eval "$(ssh-agent -s)" >/dev/null
+}
+_ssh_agent_fix
+
 # claude system prompts (NOTE: rampup.md is in the claude-code-kit repo)
 alias claude-rampup='claude --system-prompt-file ~/.claude/prompts/rampup.md'
 
